@@ -1,0 +1,36 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@codemirror/lang-markdown": "^6.2.4",
+    "@fec/remark-a11y-emoji": "^4.0.2",
+    "@iconify-icon/react": "^2.0.1",
+    "@uiw/codemirror-theme-tokyo-night": "^4.21.25",
+    "@uiw/react-codemirror": "^4.21.25",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "rehype-raw": "^7.0.0",
+    "remark-gemoji": "^8.0.0",
+    "remark-gfm": "^4.0.0",
+    "remark-highlight.js": "^7.0.1",
+    "remark-kbd": "^1.1.0",
+    "remark-rehype": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "@types/react-syntax-highlighter": "^15.5.11",
+    "@vitejs/plugin-react": "^2.0.1",
+    "typescript": "^4.6.4",
+    "vite": "^3.0.7"
+  }
+}

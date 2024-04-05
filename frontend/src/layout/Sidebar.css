@@ -1,0 +1,28 @@
+.sidebar {
+  /* width: 60px; */
+  /* height: 100vh; */
+  background-color: #333;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar-item {
+  width: 100%;
+  padding: .5rem;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar-item:hover {
+  background-color: #444;
+}
+
+.sidebar-item-label {
+  font-size: 12px;
+  display: none;
+}
