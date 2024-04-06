@@ -18,11 +18,9 @@ Anything inside the `card-back` tag will be shown on the back of the flash card.
 </card-back>
 ```
 
-![editor](./assets/images/editor_example.png)
-
-![offerman](./assets/images/offerman_card_example.png)
-
-![card-back](./assets/images/card_back_example.png)
+<img src="./assets/images/editor_example.png" width="500px" />
+<img src="./assets/images/offerman_card_example.png" width="500px">
+<img src="./assets/images/card_back_example.png" width="500px">
 
 
 ### Dev
