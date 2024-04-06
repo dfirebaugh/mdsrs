@@ -11,14 +11,14 @@
 }
 
 .card-content {
-  display: flex;
-  flex-wrap: wrap;
+  /* display: flex; */
+  /* flex-wrap: wrap; */
   justify-content: center;
   align-items: center;
 }
 
 .card-content * {
-  width: 80%;
+  /* width: 80%; */
 }
 
 .card-content h1 {

@@ -18,10 +18,26 @@ export function GetReviewCards() {
   return window['go']['main']['App']['GetReviewCards']();
 }
 
+export function LoadConfig() {
+  return window['go']['main']['App']['LoadConfig']();
+}
+
 export function NewDeck(arg1) {
   return window['go']['main']['App']['NewDeck'](arg1);
 }
 
-export function UpdateSRSData() {
-  return window['go']['main']['App']['UpdateSRSData']();
+export function PlayAudioFile(arg1) {
+  return window['go']['main']['App']['PlayAudioFile'](arg1);
+}
+
+export function SaveConfig(arg1) {
+  return window['go']['main']['App']['SaveConfig'](arg1);
+}
+
+export function UpdateConfigFromJSON(arg1) {
+  return window['go']['main']['App']['UpdateConfigFromJSON'](arg1);
+}
+
+export function UpdateSRSData(arg1, arg2, arg3) {
+  return window['go']['main']['App']['UpdateSRSData'](arg1, arg2, arg3);
 }

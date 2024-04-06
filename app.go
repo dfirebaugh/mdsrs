@@ -1,21 +1,36 @@
 package main
 
 import (
-	"changeme/internal/storage"
 	"context"
 	"fmt"
+
+	"github.com/dfirebaugh/mdsrs/internal/audio"
+	"github.com/dfirebaugh/mdsrs/internal/config"
+	"github.com/dfirebaugh/mdsrs/internal/srs"
+	"github.com/dfirebaugh/mdsrs/internal/storage"
+
+	"github.com/sirupsen/logrus"
 )
 
 // App struct
 type App struct {
+	*config.Config
+	*audio.Player
 	decks map[string]*storage.Deck
 	ctx   context.Context
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
+	c, err := config.LoadConfigFromFile(".mdsrs/config.json")
+	if err != nil {
+		logrus.Error(err)
+		c = config.NewConfig()
+	}
 	a := &App{
-		decks: make(map[string]*storage.Deck),
+		Config: c,
+		decks:  make(map[string]*storage.Deck),
+		Player: audio.NewPlayer(),
 	}
 	storage.EnsureDecksDir()
 	decks, err := storage.LoadAllDecks()
@@ -42,7 +57,7 @@ func (a *App) GetDecks() map[string]*storage.Deck {
 }
 
 func (a *App) NewDeck(name string) *storage.Deck {
-	a.decks[name] = storage.NewDeck(name)
+	a.decks[name] = storage.NewDeck(name, srs.NewSRS(name))
 	a.decks[name].Save()
 
 	return a.decks[name]
@@ -83,12 +98,36 @@ func (a *App) GetCardContent(deckID string, cardID string) string {
 	for _, card := range deck.Cards {
 		if card.ID == cardID {
 			content = card.Content
+			break
 		}
 	}
 	return content
 }
 
-func (a *App) UpdateSRSData() {}
+func (a *App) UpdateSRSData(deckID string, cardID string, reviewConfidence int) {
+	// Check if the deck exists and is not nil
+	deck, ok := a.decks[deckID]
+	if !ok || deck == nil {
+		logrus.Error("Deck not found or is nil")
+		return
+	}
+
+	deck.SRS = srs.NewSRS(deck.DirPath)
+
+	// Check if SRS data in the deck is not nil
+	if deck.SRS == nil {
+		logrus.Error("SRS data in deck is nil")
+		return
+	}
+
+	// Proceed to update SRS data
+	deck.SRS.UpdateSRSData(deck, cardID, reviewConfidence)
+
+	// Safely attempt to save SRS data to file
+	if err := deck.SaveSRSToFile(); err != nil {
+		logrus.Errorf("Failed to save SRS data: %v", err)
+	}
+}
 
 func (a *App) GetReviewCards() []storage.Flashcard {
 	var cards []storage.Flashcard
@@ -97,4 +136,18 @@ func (a *App) GetReviewCards() []storage.Flashcard {
 		cards = append(cards, deck.Cards...)
 	}
 	return cards
+}
+
+func (a *App) SaveConfig(configJSON string) {
+	if err := a.Config.UpdateConfigFromJSON(configJSON); err != nil {
+		logrus.Error(err)
+	}
+
+	if err := a.Config.SaveConfig(".mdsrs/config.json"); err != nil {
+		logrus.Error(err)
+	}
+}
+
+func (a *App) PlayAudioFile(content string) {
+	a.Player.PlayAudioFile(content, audio.TypeMP3)
 }

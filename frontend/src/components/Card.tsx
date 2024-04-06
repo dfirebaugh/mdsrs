@@ -5,6 +5,8 @@ import { nord } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import emoji from 'remark-gemoji';
 import IconButton from './IconButton'
+import AudioPlayer from './AudioPlayer'
+import ImageElement from './ImageElement'
 
 export default function Card({ children, setEditingCardId, setEditingCardName, id }: {
   children?: React.ReactNode,
@@ -36,7 +38,13 @@ export default function Card({ children, setEditingCardId, setEditingCardName, i
               {children}
             </code>
           )
-        }
+        },
+        audio({src}) {
+          return <AudioPlayer src={src} />;
+        },
+        img({src}) {
+          return <ImageElement src={src} />;
+        },
       }}>
       {content}
     </Markdown>

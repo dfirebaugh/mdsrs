@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-markdown": "^6.2.4",
     "@fec/remark-a11y-emoji": "^4.0.2",
     "@iconify-icon/react": "^2.0.1",

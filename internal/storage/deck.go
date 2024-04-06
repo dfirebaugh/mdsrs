@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,16 +8,23 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type SRS interface {
+	UpdateSRSData(deck *Deck, cardID string, outcome int)
+	GetReviewCards() []Flashcard
+	SaveSRSToFile() error
+	LoadSRSFromFile() error
+}
+
 type Deck struct {
 	Name    string      `json:"name"`
 	Cards   []Flashcard `json:"cards"`
-	SRSData []SRSData   `json:"srsData"`
 	DirPath string      `json:"-"`
+	SRS     `json:"-"`
 }
 
-func NewDeck(name string) *Deck {
+func NewDeck(name string, srsData SRS) *Deck {
 	dir := DeckDIR + "/" + name
-	return &Deck{Name: name, DirPath: dir}
+	return &Deck{Name: name, DirPath: dir, SRS: srsData}
 }
 
 func EnsureDecksDir() error {
@@ -40,18 +46,7 @@ func LoadDeck(deckName string) (*Deck, error) {
 
 	deck := &Deck{Name: deckName, Cards: []Flashcard{}}
 
-	srsDataPath := filepath.Join(deckPath, "srs_metadata.json")
-	srsDataBytes, err := os.ReadFile(srsDataPath)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(srsDataBytes, &deck.SRSData)
-	if err != nil {
-		return nil, err
-	}
-
-	err = filepath.Walk(deckPath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(deckPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

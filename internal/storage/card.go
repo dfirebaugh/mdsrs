@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const DeckDIR = "decks"
+const DeckDIR = ".mdsrs/decks"
 const fileEXT = ".md"
 
 type Flashcard struct {
@@ -89,20 +88,14 @@ func (d *Deck) Save() error {
 		}
 	}
 
-	srsDataPath := filepath.Join(deckPath, "srs_metadata.json")
-	srsFile, err := os.Create(srsDataPath)
-	if err != nil {
-		return err
-	}
-	defer srsFile.Close()
+	return nil
+}
 
-	srsData, err := json.Marshal(d.SRSData)
-	if err != nil {
-		return err
+func FindCardByID(deck *Deck, cardID string) *Flashcard {
+	for _, card := range deck.Cards {
+		if card.ID == cardID {
+			return &card
+		}
 	}
-	if _, err := srsFile.Write(srsData); err != nil {
-		return err
-	}
-
 	return nil
 }

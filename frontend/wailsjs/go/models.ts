@@ -1,19 +1,24 @@
-export namespace storage {
+export namespace config {
 	
-	export class SRSData {
-	    filename: string;
-	    reviewDate: string;
+	export class Config {
+	    numberOfCardsInReview: number;
+	    decksExcludedFromReview: string[];
 	
 	    static createFrom(source: any = {}) {
-	        return new SRSData(source);
+	        return new Config(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.filename = source["filename"];
-	        this.reviewDate = source["reviewDate"];
+	        this.numberOfCardsInReview = source["numberOfCardsInReview"];
+	        this.decksExcludedFromReview = source["decksExcludedFromReview"];
 	    }
 	}
+
+}
+
+export namespace storage {
+	
 	export class Flashcard {
 	    deckId: string;
 	    id: string;
@@ -35,7 +40,6 @@ export namespace storage {
 	export class Deck {
 	    name: string;
 	    cards: Flashcard[];
-	    srsData: SRSData[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Deck(source);
@@ -45,7 +49,6 @@ export namespace storage {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.name = source["name"];
 	        this.cards = this.convertValues(source["cards"], Flashcard);
-	        this.srsData = this.convertValues(source["srsData"], SRSData);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -66,7 +69,6 @@ export namespace storage {
 		    return a;
 		}
 	}
-	
 
 }
 

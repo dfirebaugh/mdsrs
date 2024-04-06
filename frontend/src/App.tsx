@@ -9,8 +9,10 @@ import { GetCardContent, GetReviewCards, AddOrUpdateCard } from '../wailsjs/go/m
 import CardEditor from './components/CardEditor';
 import CardTabs from './components/CardTabs';
 import CardViewer from './components/CardViewer';
+import ConfigEditor from './components/ConfigEditor';
 
 function App() {
+    const [isEditingConfig, setIsEditingConfig] = useState(false);
     const [isExplorerVisible, setIsExplorerVisible] = useState(true);
     const [isInReview, setIsInReview] = useState(false);
     const [openedCards, setOpenedCards] = useState<storage.Flashcard[]>([]);
@@ -36,11 +38,6 @@ function App() {
         });
     }
 
-    const handleSidebarClick = () => {
-        setIsInReview(false);
-        setIsExplorerVisible(!isExplorerVisible);
-    };
-
     const handleOpenCard = async (cardToOpen: storage.Flashcard) => {
         let cardIndex = openedCards.findIndex(c => c.id === cardToOpen.id);
         if (cardIndex === -1) {
@@ -65,11 +62,18 @@ function App() {
         setActiveTabId(null);
     };
 
-    const checkIfCardIsSaved = (cardId: string) => true;
+    const checkIfCardIsSaved = (cardId: string) => {
+        console.log("is saved:" , openedCards.find(c => c.id === cardId)?.content === currentContent);
+        return openedCards.find(c => c.id === cardId)?.content === currentContent;
+    };
 
     const renderMainAreaContent = () => {
+        if (isEditingConfig) {
+            return <ConfigEditor />;
+        }
         if (isInReview) return <CardViewer cards={reviewCards} />;
         if (!openedCards.length) return <About />;
+
         return (
             <>
                 <CardTabs
@@ -112,7 +116,11 @@ function App() {
                     id: 'home',
                     label: 'Home',
                     icon: <IconButton title="Home" icon="material-symbols:stacks-rounded" />,
-                    onClick: () => handleSidebarClick(),
+                    onClick: () => {
+                        setIsInReview(false);
+                        setIsExplorerVisible(!isExplorerVisible);
+                        setIsEditingConfig(false);
+                    },
                 },
                 {
                     id: 'review',
@@ -121,10 +129,20 @@ function App() {
                     onClick: () => {
                         updateReviewCards();
                         setIsExplorerVisible(false);
+                        setIsEditingConfig(false);
                         setIsInReview(true);
-                        setCurrentContent("");
                     },
                 },
+                {
+                    id: 'config',
+                    label: 'Config',
+                    icon: <IconButton title="Config" icon="material-symbols:settings" />,
+                    onClick: () => {
+                        setIsExplorerVisible(false);
+                        setIsInReview(false);
+                        setIsEditingConfig(true);
+                    },
+                }
             ]}
             isExplorerVisible={isExplorerVisible}
             explorerContent={<DeckList handleOpenCard={handleOpenCard} />}
