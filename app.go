@@ -151,3 +151,7 @@ func (a *App) SaveConfig(configJSON string) {
 func (a *App) PlayAudioFile(content string) {
 	a.Player.PlayAudioFile(content, audio.TypeMP3)
 }
+
+func (a *App) Speak(text string, language string) {
+	audio.Speak(text, language)
+}

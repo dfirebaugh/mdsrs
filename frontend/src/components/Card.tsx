@@ -39,12 +39,8 @@ export default function Card({ children, setEditingCardId, setEditingCardName, i
             </code>
           )
         },
-        audio({src}) {
-          return <AudioPlayer src={src} />;
-        },
-        img({src}) {
-          return <ImageElement src={src} />;
-        },
+        audio: AudioPlayer as any,
+        img: ImageElement,
       }}>
       {content}
     </Markdown>

@@ -19,6 +19,8 @@ export function PlayAudioFile(arg1:string):Promise<void>;
 
 export function SaveConfig(arg1:string):Promise<void>;
 
+export function Speak(arg1:string,arg2:string):Promise<void>;
+
 export function UpdateConfigFromJSON(arg1:string):Promise<void>;
 
 export function UpdateSRSData(arg1:string,arg2:string,arg3:number):Promise<void>;
