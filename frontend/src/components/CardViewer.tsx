@@ -25,8 +25,14 @@ function extractCardFront(inputText: string): string {
 const CardViewer: React.FC<CardViewerProps> = ({ cards }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [reviewCards, setReviewCards] = useState<storage.Flashcard[]>([]);
+  useEffect(() => {
+    setReviewCards(cards)
+  }, [])
 
   useEffect(() => {
+    console.log(reviewCards.length)
+    if (reviewCards.length === 0) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'Space') {
         setIsFlipped(!isFlipped);
@@ -51,31 +57,58 @@ const CardViewer: React.FC<CardViewerProps> = ({ cards }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isFlipped]);
+  }, [reviewCards, isFlipped])
 
   const handleReviewConfidence = (confidenceLevel: number) => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % cards.length);
     setIsFlipped(false);
 
-    const currentCard = cards[currentIndex];
-    UpdateSRSData(currentCard.deckId, currentCard.id, confidenceLevel)
+    setReviewCards((currentCards) => {
+      let newCards = [...currentCards];
+
+      if (confidenceLevel === 1) {
+        const cardToEnd = newCards.splice(currentIndex, 1)[0];
+        newCards.push(cardToEnd);
+      } else if (confidenceLevel === 2 || confidenceLevel === 3) {
+        newCards = newCards.filter((_, index) => index !== currentIndex);
+      }
+
+      return newCards;
+    });
+
+    setCurrentIndex((prevIndex) => {
+      if (confidenceLevel === 1) {
+        return prevIndex;
+      } else {
+        return (prevIndex + 1) % (reviewCards.length - 1);
+      }
+    });
+
+    const currentCard = reviewCards[currentIndex];
+    if (currentCard) {
+      UpdateSRSData(currentCard.deckId, currentCard.id, confidenceLevel);
+    }
   };
 
-  if (cards.length === 0) {
-    return <p>No cards available.</p>
+  if (reviewCards.length === 0 || !reviewCards[currentIndex]?.id) {
+    return <p>No cards available or review has been finished</p>
   }
+
   return (
     <div className="review-container">
       <div className="card-content">
-          <Card key={cards[currentIndex].id} id={cards[currentIndex].id}>
-            {!isFlipped ? extractCardFront(cards[currentIndex].content) : extractCardBack(cards[currentIndex].content)}
-          </Card>
+        <Card key={reviewCards[currentIndex]?.id} id={reviewCards[currentIndex]?.id}>
+          {!isFlipped ? extractCardFront(reviewCards[currentIndex]?.content) : extractCardBack(reviewCards[currentIndex]?.content)}
+        </Card>
       </div>
       <div className="review-controls">
         <IconButton icon="material-symbols:flip" onClick={() => setIsFlipped(!isFlipped)} />
-        <TextButton title={'hard (1)'} onClick={() => handleReviewConfidence(1)}/>
-        <TextButton title={'iffy (2)'} onClick={() => handleReviewConfidence(2)}/>
-        <TextButton title={'easy (3)'} onClick={() => handleReviewConfidence(3)}/>
+        <TextButton title={'hard (1)'} onClick={() => handleReviewConfidence(1)} />
+        <TextButton title={'iffy (2)'} onClick={() => handleReviewConfidence(2)} />
+        <TextButton title={'easy (3)'} onClick={() => handleReviewConfidence(3)} />
+
+        <div style={{ width: '2rem;', paddingLeft: 12 }}>
+          {reviewCards.length}
+        </div>
       </div>
     </div>
   );

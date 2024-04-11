@@ -155,3 +155,7 @@ func (a *App) PlayAudioFile(content string) {
 func (a *App) Speak(text string, language string) {
 	audio.Speak(text, language)
 }
+
+func (a *App) LoadConfig() config.Config {
+	return config.NewConfig().LoadConfig()
+}

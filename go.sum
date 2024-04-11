@@ -21,6 +21,12 @@ github.com/hajimehoshi/oto/v2 v2.3.1 h1:qrLKpNus2UfD674oxckKjNJmesp9hMh7u7QCrStB
 github.com/hajimehoshi/oto/v2 v2.3.1/go.mod h1:seWLbgHH7AyUMYKfKYT9pg7PhUu9/SisyJvNTT+ASQo=
 github.com/hegedustibor/htgo-tts v0.0.0-20230402053941-cd8d1a158135 h1:HWBBhNF2kQVwlPCmcJL3fQxkuzP2LOTiLOib5sx6swI=
 github.com/hegedustibor/htgo-tts v0.0.0-20230402053941-cd8d1a158135/go.mod h1:VBNcur+xWvaQIWCaLH8w7j68zPeqQwVfjREn2S7kYbY=
+github.com/ikawaha/kagome-dict v1.0.9 h1:1Gg735LbBYsdFu13fdTvW6eVt0qIf5+S2qXGJtlG8C0=
+github.com/ikawaha/kagome-dict v1.0.9/go.mod h1:mn9itZLkFb6Ixko7q8eZmUabHbg3i9EYewnhOtvd2RM=
+github.com/ikawaha/kagome-dict/ipa v1.0.10 h1:wk9I21yg+fKdL6HJB9WgGiyXIiu1VttumJwmIRwn0g8=
+github.com/ikawaha/kagome-dict/ipa v1.0.10/go.mod h1:rbaOKrF58zhtpV2+2sVZBj0sUSp9dVKPjr660MehJbs=
+github.com/ikawaha/kagome/v2 v2.9.5 h1:uIkf04UWhSrcKa/f6HO0GmXFrBE3kQ1xauyP9EbgBAU=
+github.com/ikawaha/kagome/v2 v2.9.5/go.mod h1:OYzxPG9dQSalvznlcLNR8TEKpPwzKhnZszw9LLbf7e8=
 github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e h1:Q3+PugElBCf4PFpxhErSzU3/PY5sFL5Z6rfv4AbGAck=
 github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e/go.mod h1:alcuEEnZsY1WQsagKhZDsoPCRoOijYqhZvPwLG0kzVs=
 github.com/jfreymuth/oggvorbis v1.0.5 h1:u+Ck+R0eLSRhgq8WTmffYnrVtSztJcYrl588DM4e3kQ=

@@ -1,12 +1,9 @@
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
-import { nord } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import emoji from 'remark-gemoji';
 import IconButton from './IconButton'
-import AudioPlayer from './AudioPlayer'
-import ImageElement from './ImageElement'
+import MarkDownExtensions from './MarkdownExtensions'
 
 export default function Card({ children, setEditingCardId, setEditingCardName, id }: {
   children?: React.ReactNode,
@@ -22,26 +19,7 @@ export default function Card({ children, setEditingCardId, setEditingCardName, i
     <Markdown
       remarkPlugins={[remarkGfm, emoji]}
       rehypePlugins={[rehypeRaw]}
-      components={{
-        code(props) {
-          const { children, className, ...rest } = props
-          const match = /language-(\w+)/.exec(className || '')
-          return match ? (
-            <SyntaxHighlighter
-              PreTag="div"
-              children={String(children).replace(/\n$/, '')}
-              language={match[1]}
-              style={nord}
-            />
-          ) : (
-            <code {...rest} className={className}>
-              {children}
-            </code>
-          )
-        },
-        audio: AudioPlayer as any,
-        img: ImageElement,
-      }}>
+      components={MarkDownExtensions()}>
       {content}
     </Markdown>
     {!!setEditingCardId && <IconButton icon="material-symbols:edit" onClick={() => setEditingCardId(id || "")} />}
