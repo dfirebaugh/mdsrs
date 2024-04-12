@@ -3,6 +3,8 @@ package nihongo
 import (
 	"fmt"
 	"os"
+	"strings"
+	"sync"
 
 	jmdict "github.com/themoeway/jmdict-go"
 )
@@ -25,108 +27,78 @@ func (w WordInfo) Print() {
 	}
 }
 
-func loadDictionary[T any](path string, loader func(file *os.File) (T, error)) (T, error) {
-	var dict T
-	file, err := os.Open(path)
-	if err != nil {
-		return dict, fmt.Errorf("failed to open dictionary file: %w", err)
-	}
-	defer file.Close()
-
-	dict, err = loader(file)
-	if err != nil {
-		return dict, fmt.Errorf("failed to load dictionary: %w", err)
-	}
-
-	return dict, nil
+type DictionaryService struct {
+	dictionary    jmdict.Jmdict
+	dictionaryMap map[string]string
+	mutex         sync.Mutex
 }
 
-func loadJMDict() (jmdict.Jmdict, error) {
-	var dict jmdict.Jmdict
+func NewDictionaryService() *DictionaryService {
+	return &DictionaryService{
+		dictionaryMap: make(map[string]string),
+	}
+}
+
+func (ds *DictionaryService) loadJMDict() error {
+	ds.mutex.Lock()
+	defer ds.mutex.Unlock()
+
+	if len(ds.dictionaryMap) != 0 {
+		return nil // Dictionary already loaded
+	}
+
 	jmdictPath := ".mdsrs/dictionaries/JMdict_e"
-
 	file, err := os.Open(jmdictPath)
 	if err != nil {
-		return dict, fmt.Errorf("failed to open JMDict file: %w", err)
+		return fmt.Errorf("failed to open JMDict file: %w", err)
 	}
 	defer file.Close()
 
-	dict, _, err = jmdict.LoadJmdict(file)
+	ds.dictionary, ds.dictionaryMap, err = jmdict.LoadJmdict(file)
 	if err != nil {
-		return dict, fmt.Errorf("failed to load JMDict: %w", err)
+		return fmt.Errorf("failed to load JMDict: %w", err)
 	}
 
-	return dict, nil
+	return nil
 }
 
-func loadEMDict() (jmdict.Jmnedict, error) {
-	var dict jmdict.Jmnedict
-	jmdictPath := ".mdsrs/dictionaries/JMdict_e"
-
-	file, err := os.Open(jmdictPath)
-	if err != nil {
-		return dict, fmt.Errorf("failed to open JMDict file: %w", err)
-	}
-	defer file.Close()
-
-	dict, _, err = jmdict.LoadJmnedict(file)
-	if err != nil {
-		return dict, fmt.Errorf("failed to load JMDict: %w", err)
+func (ds *DictionaryService) Lookup(word string) (*WordInfo, error) {
+	if err := ds.loadJMDict(); err != nil {
+		return nil, fmt.Errorf("failed to load the JMDict dictionary: %w", err)
 	}
 
-	return dict, nil
-}
-
-func loadKanjiDict() (jmdict.Kanjidic, error) {
-	var dict jmdict.Kanjidic
-	jmdictPath := ".mdsrs/dictionaries/kanjidic2_dtd"
-
-	file, err := os.Open(jmdictPath)
-	if err != nil {
-		return dict, fmt.Errorf("failed to open JMDict file: %w", err)
-	}
-	defer file.Close()
-
-	dict, err = jmdict.LoadKanjidic(file)
-	if err != nil {
-		return dict, fmt.Errorf("failed to load JMDict: %w", err)
-	}
-
-	return dict, nil
-}
-
-func Lookup(word string) (*WordInfo, error) {
-	dict, err := loadJMDict()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, entry := range dict.Entries {
-		found := false
-		for _, kanji := range entry.Kanji {
-			if kanji.Expression == word {
-				found = true
-				break
-			}
-		}
-		for _, reading := range entry.Readings {
-			if reading.Reading == word {
-				found = true
-				break
-			}
-		}
-		if found {
-			info := &WordInfo{}
-			for _, sense := range entry.Sense {
-				for _, gloss := range sense.Glossary {
-					info.Definitions = append(info.Definitions, gloss.Content)
-				}
-				info.PartsOfSpeech = append(info.PartsOfSpeech, sense.PartsOfSpeech...)
-				info.Notes = append(info.Notes, sense.Information...)
-			}
-			return info, nil
+	for _, entry := range ds.dictionary.Entries {
+		if ds.isWordInEntry(word, entry) {
+			return ds.createWordInfo(entry), nil
 		}
 	}
 
-	return nil, fmt.Errorf("word not found")
+	return nil, fmt.Errorf("word '%s' not found in dictionary", word)
+}
+
+func (ds *DictionaryService) isWordInEntry(word string, entry jmdict.JmdictEntry) bool {
+	word = strings.TrimSpace(strings.ToLower(word))
+	for _, kanji := range entry.Kanji {
+		if strings.ToLower(kanji.Expression) == word {
+			return true
+		}
+	}
+	for _, reading := range entry.Readings {
+		if strings.ToLower(reading.Reading) == word {
+			return true
+		}
+	}
+	return false
+}
+
+func (ds *DictionaryService) createWordInfo(entry jmdict.JmdictEntry) *WordInfo {
+	info := &WordInfo{}
+	for _, sense := range entry.Sense {
+		for _, gloss := range sense.Glossary {
+			info.Definitions = append(info.Definitions, gloss.Content)
+		}
+		info.PartsOfSpeech = append(info.PartsOfSpeech, sense.PartsOfSpeech...)
+		info.Notes = append(info.Notes, sense.Information...)
+	}
+	return info
 }

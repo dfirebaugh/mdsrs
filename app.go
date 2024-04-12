@@ -17,6 +17,7 @@ import (
 type App struct {
 	*config.Config
 	*audio.Player
+	*nihongo.DictionaryService
 	decks map[string]*storage.Deck
 	ctx   context.Context
 }
@@ -29,9 +30,10 @@ func NewApp() *App {
 		c = config.NewConfig()
 	}
 	a := &App{
-		Config: c,
-		decks:  make(map[string]*storage.Deck),
-		Player: audio.NewPlayer(),
+		Config:            c,
+		decks:             make(map[string]*storage.Deck),
+		Player:            audio.NewPlayer(),
+		DictionaryService: nihongo.NewDictionaryService(),
 	}
 	storage.EnsureDecksDir()
 	decks, err := storage.LoadAllDecks()
@@ -182,6 +184,6 @@ func (a *App) LoadConfig() config.Config {
 }
 
 func (a *App) Lookup(word string) nihongo.WordInfo {
-	result, _ := nihongo.Lookup(word)
+	result, _ := a.DictionaryService.Lookup(word)
 	return *result
 }

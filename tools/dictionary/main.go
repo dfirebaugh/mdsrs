@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	dictService := nihongo.NewDictionaryService()
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	if len(os.Args) < 2 {
@@ -16,7 +18,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	result, err := nihongo.Lookup(os.Args[1])
+	result, err := dictService.Lookup(os.Args[1])
 	if err != nil {
 		log.Fatalf("Error performing lookup: %v", err)
 	}

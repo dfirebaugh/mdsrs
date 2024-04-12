@@ -29,12 +29,16 @@ type WordInfo struct {
 
 const workerCount = 35
 
+var dictService *nihongo.DictionaryService
+
 func main() {
 	logrus.Info("Starting application...")
 	if len(os.Args) < 2 {
 		logrus.Fatal("Usage: go run main.go <srt_file>")
 		os.Exit(1)
 	}
+
+	dictService = nihongo.NewDictionaryService()
 
 	filename := os.Args[1]
 	file, err := os.Open(filename)
@@ -52,7 +56,7 @@ func main() {
 
 	wordFrequencies := tokenizeAndCountWords(subtitles)
 	tasks := make(chan WordInfo)
-	errors := make(chan error)
+	errors := make(chan error, workerCount)
 	var wg sync.WaitGroup
 
 	logrus.Info("preforming dictionary lookups...")
@@ -70,8 +74,10 @@ func main() {
 		tasks <- info
 	}
 
-	close(tasks)
-	wg.Wait()
+	go func() {
+		wg.Wait()
+		close(errors)
+	}()
 
 	close(errors)
 	handleErrors(errors)
@@ -82,7 +88,13 @@ func worker(tasks <-chan WordInfo, errors chan<- error, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for task := range tasks {
 		if err := writeMDFile(task.Word, task.Count, setToSlice(task.Sentences)); err != nil {
-			errors <- err
+			select {
+			case errors <- err:
+				// Error sent successfully
+			default:
+				// Error channel is full or no longer listened to
+				logrus.Warnf("Dropped error: %v", err)
+			}
 		}
 	}
 }
@@ -125,7 +137,7 @@ func writeMDFile(japaneseText string, frequency int, sentences []string) error {
 		}
 	}()
 
-	if definition, err := nihongo.Lookup(japaneseText); err == nil {
+	if definition, err := dictService.Lookup(japaneseText); err == nil {
 		file.WriteString("\n### Definitions\n\n")
 		for _, d := range definition.Definitions {
 			if _, err := file.WriteString(fmt.Sprintf("- %s\n", d)); err != nil {
@@ -169,6 +181,14 @@ func parseSRT(file *os.File) ([]Subtitle, error) {
 		line := scanner.Text()
 		line = strings.Replace(line, "♬", "", -1)
 		line = strings.Replace(line, "➡", "", -1)
+		line = strings.Replace(line, "『", "", -1)
+		line = strings.Replace(line, "｢", "", -1)
+		line = strings.Replace(line, "』", "", -1)
+		line = strings.Replace(line, "｣", "", -1)
+		line = strings.Replace(line, "〉", "", -1)
+		line = strings.Replace(line, "〈", "", -1)
+		line = strings.Replace(line, "》", "", -1)
+		line = strings.Replace(line, "》", "", -1)
 
 		if line == "" && currentSubtitle != nil {
 			currentSubtitle.Text = textBlock
@@ -235,7 +255,7 @@ func isParticle(word string) bool {
 }
 
 func isPunctuation(word string) bool {
-	return strings.Contains("！｡ ?…)(!?,<>:≪≪(《", word)
+	return strings.Contains("！｡ ?…)(!?,<>:≪≪(《･？", word)
 }
 
 func isUnitOfMeasurement(word string) bool {
