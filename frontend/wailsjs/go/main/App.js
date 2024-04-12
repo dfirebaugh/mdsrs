@@ -22,6 +22,10 @@ export function LoadConfig() {
   return window['go']['main']['App']['LoadConfig']();
 }
 
+export function Lookup(arg1) {
+  return window['go']['main']['App']['Lookup'](arg1);
+}
+
 export function NewDeck(arg1) {
   return window['go']['main']['App']['NewDeck'](arg1);
 }

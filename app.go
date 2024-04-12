@@ -6,6 +6,7 @@ import (
 
 	"github.com/dfirebaugh/mdsrs/internal/audio"
 	"github.com/dfirebaugh/mdsrs/internal/config"
+	"github.com/dfirebaugh/mdsrs/internal/nihongo"
 	"github.com/dfirebaugh/mdsrs/internal/srs"
 	"github.com/dfirebaugh/mdsrs/internal/storage"
 
@@ -35,6 +36,11 @@ func NewApp() *App {
 	storage.EnsureDecksDir()
 	decks, err := storage.LoadAllDecks()
 
+	for _, d := range decks {
+		d.SRS = srs.NewSRS(d.Name)
+		d.SRS.LoadCardsFromMarkdown(d.DirPath)
+	}
+
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +63,9 @@ func (a *App) GetDecks() map[string]*storage.Deck {
 }
 
 func (a *App) NewDeck(name string) *storage.Deck {
-	a.decks[name] = storage.NewDeck(name, srs.NewSRS(name))
+	s := srs.NewSRS(name)
+	a.decks[name] = storage.NewDeck(name, s)
+	s.LoadCardsFromMarkdown(a.decks[name].DirPath)
 	a.decks[name].Save()
 
 	return a.decks[name]
@@ -67,9 +75,7 @@ func (a *App) AddOrUpdateCard(deckID string, cardID string, title string, conten
 	if cardID == "" {
 		cardID = storage.GenerateID()
 	}
-	println("adding or updating card in deck: ", deckID)
-	println("cardID: ", cardID)
-	println("content: ", content)
+
 	d := a.decks[deckID]
 	if d == nil {
 		fmt.Println("Deck not found, cannot add or update card")
@@ -113,6 +119,7 @@ func (a *App) UpdateSRSData(deckID string, cardID string, reviewConfidence int) 
 	}
 
 	deck.SRS = srs.NewSRS(deck.DirPath)
+	deck.SRS.LoadCardsFromMarkdown(deck.DirPath)
 
 	// Check if SRS data in the deck is not nil
 	if deck.SRS == nil {
@@ -131,10 +138,22 @@ func (a *App) UpdateSRSData(deckID string, cardID string, reviewConfidence int) 
 
 func (a *App) GetReviewCards() []storage.Flashcard {
 	var cards []storage.Flashcard
+	numCards := a.Config.NumberOfCardsInReview
 
 	for _, deck := range a.decks {
-		cards = append(cards, deck.Cards...)
+		if deck == nil || numCards <= 0 {
+			continue
+		}
+
+		deckReviewCards := deck.GetReviewCards(numCards)
+		cards = append(cards, deckReviewCards...)
+
+		numCards -= len(deckReviewCards)
+		if numCards <= 0 {
+			break
+		}
 	}
+
 	return cards
 }
 
@@ -157,5 +176,12 @@ func (a *App) Speak(text string, language string) {
 }
 
 func (a *App) LoadConfig() config.Config {
-	return config.NewConfig().LoadConfig()
+	c, _ := config.LoadConfigFromFile(".mdsrs/config.json")
+	a.Config = c
+	return *c
+}
+
+func (a *App) Lookup(word string) nihongo.WordInfo {
+	result, _ := nihongo.Lookup(word)
+	return *result
 }

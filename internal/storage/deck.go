@@ -10,9 +10,10 @@ import (
 
 type SRS interface {
 	UpdateSRSData(deck *Deck, cardID string, outcome int)
-	GetReviewCards() []Flashcard
+	GetReviewCards(numCards int) []Flashcard
 	SaveSRSToFile() error
 	LoadSRSFromFile() error
+	LoadCardsFromMarkdown(deckDir string) error
 }
 
 type Deck struct {

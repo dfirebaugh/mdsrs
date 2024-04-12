@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
+	"sync"
 
 	"github.com/dfirebaugh/mdsrs/internal/nihongo"
 	"github.com/ikawaha/kagome-dict/ipa"
@@ -21,110 +21,142 @@ type Subtitle struct {
 }
 
 type WordInfo struct {
-	Word      string
-	Count     int
-	Sentences map[string]struct{}
+	Word       string
+	Count      int
+	Sentences  map[string]struct{}
+	Definition string
 }
 
+const workerCount = 35
+
 func main() {
+	logrus.Info("Starting application...")
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go <srt_file>")
+		logrus.Fatal("Usage: go run main.go <srt_file>")
 		os.Exit(1)
 	}
 
 	filename := os.Args[1]
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
+		logrus.Errorf("Error opening file %s: %v", filename, err)
 		os.Exit(1)
 	}
 	defer file.Close()
 
 	subtitles, err := parseSRT(file)
 	if err != nil {
-		fmt.Println("Error parsing SRT file:", err)
+		logrus.Errorf("Error parsing SRT file: %v", err)
 		os.Exit(1)
 	}
 
-	count := 0
 	wordFrequencies := tokenizeAndCountWords(subtitles)
+	tasks := make(chan WordInfo)
+	errors := make(chan error)
+	var wg sync.WaitGroup
 
-	var wordFreqPairs []WordInfo
-	for word, info := range wordFrequencies {
-		if isParticle(word) || isPunctuation(word) {
+	logrus.Info("preforming dictionary lookups...")
+	logrus.Info("this can take a while...")
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go worker(tasks, errors, &wg)
+	}
+
+	logrus.Info("Sending tasks to workers...")
+	for _, info := range wordFrequencies {
+		if isIgnorableWord(info.Word) {
 			continue
 		}
-		var sentences []string
-		for sentence := range info.Sentences {
-			sentences = append(sentences, sentence)
-		}
-		sort.Strings(sentences)
-
-		english, _ := nihongo.Translate(word, "ja", "en")
-		writeMDFile(word, english, info.Count, sentences)
+		tasks <- info
 	}
 
-	sort.Slice(wordFreqPairs, func(i, j int) bool {
-		return wordFreqPairs[i].Count > wordFreqPairs[j].Count
-	})
+	close(tasks)
+	wg.Wait()
 
-	for word, info := range wordFrequencies {
-		var sentences []string
-		for sentence := range info.Sentences {
-			sentences = append(sentences, sentence)
-		}
-		sort.Strings(sentences)
-
-		english, _ := nihongo.Translate(word, "ja", "en")
-		writeMDFile(word, english, info.Count, sentences)
-	}
-	println(count)
+	close(errors)
+	handleErrors(errors)
+	logrus.Info("Processing completed.")
 }
 
-func writeMDFile(japaneseText string, englishText string, frequency int, sentences []string) {
-	os.Mkdir(".mdsrs/decks/dragonball", 0755)
-	file, err := os.Create(filepath.Join(".mdsrs/decks/dragonball", strings.Replace(japaneseText, "?", "", -1)+".md"))
+func worker(tasks <-chan WordInfo, errors chan<- error, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for task := range tasks {
+		if err := writeMDFile(task.Word, task.Count, setToSlice(task.Sentences)); err != nil {
+			errors <- err
+		}
+	}
+}
+
+func writeMDFile(japaneseText string, frequency int, sentences []string) error {
+	dirPath := ".mdsrs/decks/dragonball"
+	err := os.MkdirAll(dirPath, 0755)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to create directory %s: %v", dirPath, err)
+	}
+
+	fileName := strings.Replace(japaneseText, "?", "", -1) + ".md"
+	filePath := filepath.Join(dirPath, fileName)
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %v", filePath, err)
 	}
 	defer file.Close()
 
-	_, err = file.WriteString(fmt.Sprintf("# %s\n\n<audio tts=\"%s\" language=\"ja\"></audio>\n\n", japaneseText, japaneseText))
-	if err != nil {
-		logrus.Error(err)
+	logrus.Infof("Writing content to file %s", filePath)
+	header := fmt.Sprintf("# %s\n\n<audio tts=\"%s\" language=\"ja\"></audio>\n\n", japaneseText, japaneseText)
+	if _, err := file.WriteString(header); err != nil {
+		return fmt.Errorf("failed to write header to file %s: %v", filePath, err)
 	}
 
 	for _, sentence := range sentences {
-		_, err = file.WriteString(fmt.Sprintf("- %s\n", sentence))
-		if err != nil {
-			panic(err)
+		if _, err := file.WriteString(fmt.Sprintf("- %s\n", sentence)); err != nil {
+			return fmt.Errorf("failed to write sentence to file %s: %v", filePath, err)
 		}
 	}
 
-	_, err = file.WriteString(fmt.Sprintf("\n\n<card-back>\n\n# %s - %s\n\nFrequency: %d\n\n\n</card-back>\n", japaneseText, englishText, frequency))
-	if err != nil {
-		panic(err)
+	if _, err := file.WriteString(fmt.Sprintf("\n\n<card-back>\n\n# %s\n\n", japaneseText)); err != nil {
+		return fmt.Errorf("failed to write card back to file %s: %v", filePath, err)
 	}
+
+	defer func() {
+		frequencyFooter := fmt.Sprintf("\n\nFrequency: %d\n\n</card-back>\n", frequency)
+		if _, err := file.WriteString(frequencyFooter); err != nil {
+			logrus.Errorf("Failed to write closing card-back and frequency to file %s: %v", filePath, err)
+		}
+	}()
+
+	if definition, err := nihongo.Lookup(japaneseText); err == nil {
+		file.WriteString("\n### Definitions\n\n")
+		for _, d := range definition.Definitions {
+			if _, err := file.WriteString(fmt.Sprintf("- %s\n", d)); err != nil {
+				return fmt.Errorf("failed to write definition to file %s: %v", filePath, err)
+			}
+		}
+		file.WriteString("### PartsOfSpeech\n\n")
+		for _, d := range definition.PartsOfSpeech {
+			if _, err := file.WriteString(fmt.Sprintf("- %s\n", d)); err != nil {
+				return fmt.Errorf("failed to write parts of speech to file %s: %v", filePath, err)
+			}
+		}
+
+		file.WriteString("\n### Notes\n\n")
+		for _, d := range definition.Notes {
+			if _, err := file.WriteString(fmt.Sprintf("- %s\n", d)); err != nil {
+				return fmt.Errorf("failed to write note to file %s: %v", filePath, err)
+			}
+		}
+	} else {
+		logrus.Errorf("Failed to lookup Japanese text %s: %v", japaneseText, err)
+		return err
+	}
+
+	return nil
 }
 
-func isParticle(word string) bool {
-	particles := []string{"は", "が", "か", "の", "も", "を", "に", "で", "へ", "と", "や", "から", "まで", "ね", "よ"}
-	for _, p := range particles {
-		if p == word {
-			return true
-		}
+func handleErrors(errors <-chan error) {
+	for err := range errors {
+		logrus.Error(err)
 	}
-	return false
-}
-
-func isPunctuation(word string) bool {
-	punctuation := []string{"！", "｡", " ", "？", "…", ")", "(", "!?", "\"", ",", "<", ">", ":", "≪", "≪(", "《"}
-	for _, p := range punctuation {
-		if p == word {
-			return true
-		}
-	}
-	return false
 }
 
 func parseSRT(file *os.File) ([]Subtitle, error) {
@@ -148,7 +180,6 @@ func parseSRT(file *os.File) ([]Subtitle, error) {
 
 		if currentSubtitle == nil {
 			currentSubtitle = &Subtitle{}
-
 			fmt.Sscanf(line, "%d", &currentSubtitle.Index)
 			continue
 		}
@@ -168,9 +199,9 @@ func parseSRT(file *os.File) ([]Subtitle, error) {
 	return subtitles, nil
 }
 
-func tokenizeAndCountWords(subtitles []Subtitle) map[string]*WordInfo {
+func tokenizeAndCountWords(subtitles []Subtitle) map[string]WordInfo {
 	t, _ := tokenizer.New(ipa.Dict(), tokenizer.OmitBosEos())
-	wordFrequencies := make(map[string]*WordInfo)
+	wordFrequencies := make(map[string]WordInfo)
 
 	for _, subtitle := range subtitles {
 		for _, line := range subtitle.Text {
@@ -180,17 +211,41 @@ func tokenizeAndCountWords(subtitles []Subtitle) map[string]*WordInfo {
 					continue
 				}
 				surface := token.Surface
-				if _, exists := wordFrequencies[surface]; !exists {
-					wordFrequencies[surface] = &WordInfo{
-						Count:     0,
-						Sentences: make(map[string]struct{}),
-					}
+				info := wordFrequencies[surface]
+				info.Word = surface
+				info.Count++
+				if info.Sentences == nil {
+					info.Sentences = make(map[string]struct{})
 				}
-				wordFrequencies[surface].Count++
-				wordFrequencies[surface].Sentences[line] = struct{}{}
+				info.Sentences[line] = struct{}{}
+				wordFrequencies[surface] = info
 			}
 		}
 	}
 
 	return wordFrequencies
+}
+
+func isIgnorableWord(word string) bool {
+	return isParticle(word) || isPunctuation(word) || isUnitOfMeasurement(word)
+}
+
+func isParticle(word string) bool {
+	return strings.Contains("はがかのもをにでへとやからまでねよ", word)
+}
+
+func isPunctuation(word string) bool {
+	return strings.Contains("！｡ ?…)(!?,<>:≪≪(《", word)
+}
+
+func isUnitOfMeasurement(word string) bool {
+	return strings.Contains("mmkmcm", word)
+}
+
+func setToSlice(set map[string]struct{}) []string {
+	var slice []string
+	for s := range set {
+		slice = append(slice, s)
+	}
+	return slice
 }

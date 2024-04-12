@@ -16,7 +16,16 @@ function App() {
     const [currentContent, setCurrentContent] = useState<React.ReactNode>();
     const [explorerContent, setExplorerContent] = useState<React.ReactNode>();
     const [renderKey, setRenderKey] = useState(0);
+    const [configVersion, setConfigVersion] = useState(0);
 
+    useEffect(() => {
+        updateReviewCards();
+        LoadConfig().then(console.log);
+    }, [isEditingConfig, isInReview, reviewCards?.length]);
+
+    const updateConfigVersion = () => {
+        setConfigVersion(v => v + 1);
+    };
 
     useEffect(() => {
         updateReviewCards();
@@ -76,9 +85,10 @@ function App() {
                 setIsExplorerVisible(false);
                 setIsInReview(false);
                 setIsEditingConfig(true);
-                setCurrentContent(<ConfigEditor />);
+                updateConfigVersion();
+                setCurrentContent(<ConfigEditor key={configVersion} />);
             },
-        }
+        },
     ]
 
     return (
