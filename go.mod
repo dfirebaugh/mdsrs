@@ -26,6 +26,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/hajimehoshi/oto/v2 v2.3.1 // indirect
 	github.com/ikawaha/kagome-dict v1.0.9 // indirect
+	github.com/ikawaha/kagome.ipadic v1.1.2
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
 	github.com/jfreymuth/vorbis v1.0.2 // indirect

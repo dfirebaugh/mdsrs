@@ -10,9 +10,10 @@ import (
 )
 
 type WordInfo struct {
-	Definitions   []string
-	PartsOfSpeech []string
-	Notes         []string
+	Definitions   []string `json:"definitions"`
+	PartsOfSpeech []string `json:"partsOfSpeech"`
+	Notes         []string `json:"notes"`
+	Surface       string   `json:"surface"`
 }
 
 func (w WordInfo) Print() {
@@ -69,7 +70,9 @@ func (ds *DictionaryService) Lookup(word string) (*WordInfo, error) {
 
 	for _, entry := range ds.dictionary.Entries {
 		if ds.isWordInEntry(word, entry) {
-			return ds.createWordInfo(entry), nil
+			w := ds.createWordInfo(entry)
+			w.Surface = word
+			return w, nil
 		}
 	}
 

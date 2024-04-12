@@ -27,7 +27,7 @@ type WordInfo struct {
 	Definition string
 }
 
-const workerCount = 35
+const workerCount = 5
 
 var dictService *nihongo.DictionaryService
 
@@ -121,7 +121,7 @@ func writeMDFile(japaneseText string, frequency int, sentences []string) error {
 	}
 
 	for _, sentence := range sentences {
-		if _, err := file.WriteString(fmt.Sprintf("- %s\n", sentence)); err != nil {
+		if _, err := file.WriteString(fmt.Sprintf("- <audio tts=\"%s\" language=\"ja\"></audio>\n", sentence)); err != nil {
 			return fmt.Errorf("failed to write sentence to file %s: %v", filePath, err)
 		}
 	}

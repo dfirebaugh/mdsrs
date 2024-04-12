@@ -25,6 +25,8 @@ github.com/ikawaha/kagome-dict v1.0.9 h1:1Gg735LbBYsdFu13fdTvW6eVt0qIf5+S2qXGJtl
 github.com/ikawaha/kagome-dict v1.0.9/go.mod h1:mn9itZLkFb6Ixko7q8eZmUabHbg3i9EYewnhOtvd2RM=
 github.com/ikawaha/kagome-dict/ipa v1.0.10 h1:wk9I21yg+fKdL6HJB9WgGiyXIiu1VttumJwmIRwn0g8=
 github.com/ikawaha/kagome-dict/ipa v1.0.10/go.mod h1:rbaOKrF58zhtpV2+2sVZBj0sUSp9dVKPjr660MehJbs=
+github.com/ikawaha/kagome.ipadic v1.1.2 h1:pFxZ1PpMpc6ZoBK712YN5cVK0u/ju2DZ+gRIOriJFFs=
+github.com/ikawaha/kagome.ipadic v1.1.2/go.mod h1:DPSBbU0czaJhAb/5uKQZHMc9MTVRpDugJfX+HddPHHg=
 github.com/ikawaha/kagome/v2 v2.9.5 h1:uIkf04UWhSrcKa/f6HO0GmXFrBE3kQ1xauyP9EbgBAU=
 github.com/ikawaha/kagome/v2 v2.9.5/go.mod h1:OYzxPG9dQSalvznlcLNR8TEKpPwzKhnZszw9LLbf7e8=
 github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e h1:Q3+PugElBCf4PFpxhErSzU3/PY5sFL5Z6rfv4AbGAck=

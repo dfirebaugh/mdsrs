@@ -42,6 +42,10 @@ export function Speak(arg1, arg2) {
   return window['go']['main']['App']['Speak'](arg1, arg2);
 }
 
+export function Tokenize(arg1) {
+  return window['go']['main']['App']['Tokenize'](arg1);
+}
+
 export function UpdateConfigFromJSON(arg1) {
   return window['go']['main']['App']['UpdateConfigFromJSON'](arg1);
 }

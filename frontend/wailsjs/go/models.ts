@@ -17,6 +17,29 @@ export namespace config {
 
 }
 
+export namespace nihongo {
+	
+	export class WordInfo {
+	    definitions: string[];
+	    partsOfSpeech: string[];
+	    notes: string[];
+	    surface: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new WordInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.definitions = source["definitions"];
+	        this.partsOfSpeech = source["partsOfSpeech"];
+	        this.notes = source["notes"];
+	        this.surface = source["surface"];
+	    }
+	}
+
+}
+
 export namespace storage {
 	
 	export class Flashcard {

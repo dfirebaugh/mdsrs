@@ -1,0 +1,34 @@
+.token-tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.token-tooltip .tooltip-text {
+  display: flex;
+  visibility: hidden;
+  background-color: black;
+  color: #fff;
+  border-radius: 6px;
+  padding: 1rem;
+  position: fixed;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.token-tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+.token:hover {
+  background-color: rgb(105, 105, 105);
+}
+
+.definition-info {
+  padding-left: 1rem;
+}
+

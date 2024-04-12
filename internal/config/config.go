@@ -13,6 +13,15 @@ type Config struct {
 func LoadConfigFromFile(filePath string) (*Config, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			defaultCfg := &Config{
+				NumberOfCardsInReview: 20,
+			}
+			if err := defaultCfg.SaveConfig(filePath); err != nil {
+				return nil, err
+			}
+			return defaultCfg, nil
+		}
 		return nil, err
 	}
 

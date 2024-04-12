@@ -138,25 +138,40 @@ func (a *App) UpdateSRSData(deckID string, cardID string, reviewConfidence int) 
 	}
 }
 
-func (a *App) GetReviewCards() []storage.Flashcard {
+func (a *App) GetReviewCards() ([]storage.Flashcard, error) {
+	if a == nil {
+		return nil, fmt.Errorf("GetReviewCards called on nil App reference")
+	}
+	if a.decks == nil {
+		return nil, fmt.Errorf("no decks available")
+	}
+
 	var cards []storage.Flashcard
 	numCards := a.Config.NumberOfCardsInReview
 
+	if numCards <= 0 {
+		return nil, fmt.Errorf("invalid number of cards configured: %d", numCards)
+	}
+
 	for _, deck := range a.decks {
-		if deck == nil || numCards <= 0 {
+		if deck == nil {
 			continue
 		}
 
 		deckReviewCards := deck.GetReviewCards(numCards)
 		cards = append(cards, deckReviewCards...)
-
 		numCards -= len(deckReviewCards)
+
 		if numCards <= 0 {
 			break
 		}
 	}
 
-	return cards
+	if len(cards) == 0 {
+		return nil, fmt.Errorf("no review cards found")
+	}
+
+	return cards, nil
 }
 
 func (a *App) SaveConfig(configJSON string) {
@@ -181,6 +196,28 @@ func (a *App) LoadConfig() config.Config {
 	c, _ := config.LoadConfigFromFile(".mdsrs/config.json")
 	a.Config = c
 	return *c
+}
+
+func (a *App) Tokenize(text string) []nihongo.WordInfo {
+	var response []nihongo.WordInfo
+	tokens := nihongo.Tokenize(text)
+
+	for _, t := range tokens {
+		if t.Surface == "BOS" || t.Surface == "EOS" {
+			response = append(response, nihongo.WordInfo{})
+			continue
+		}
+		word, err := a.DictionaryService.Lookup(t.Surface)
+		if err != nil {
+			logrus.Error(err)
+			response = append(response, nihongo.WordInfo{})
+			continue
+		}
+		response = append(response, *word)
+	}
+
+	response = response[1:]
+	return response[:len(response)-1]
 }
 
 func (a *App) Lookup(word string) nihongo.WordInfo {
