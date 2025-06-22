@@ -232,32 +232,6 @@ func (a *App) ToHTML(content string) string {
 	return string(md.ToHTML([]byte(content)))
 }
 
-func (a *App) ExportDeckToCSV(deckID string) string {
-	deck, ok := a.decks[deckID]
-	if !ok {
-		logrus.Errorf("deck not found: %s", deckID)
-		return ""
-	}
-
-	csvData, err := store.ExportDeckToCSV(deck)
-	if err != nil {
-		logrus.Errorf("failed to export deck to CSV: %v", err)
-		return ""
-	}
-
-	return csvData
-}
-
-func (a *App) ImportDeckFromCSV(deckName string, csvData string) error {
-	deck, err := store.ImportCSVDeck(csvData, deckName)
-	if err != nil {
-		return err
-	}
-
-	a.decks[deck.Name] = deck
-	return nil
-}
-
 func (a *App) GetCardsFromDeck(deckName string) []models.Flashcard {
 	deck, ok := a.decks[deckName]
 	if !ok || deck == nil {

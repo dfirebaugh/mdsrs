@@ -37,6 +37,9 @@ func main() {
 			&ConfigService{
 				Config: config.NewConfig(),
 			},
+			&CSVService{
+				decks: app.decks,
+			},
 		},
 	}
 

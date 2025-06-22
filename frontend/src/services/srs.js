@@ -121,15 +121,6 @@ export default class SRS {
 	}
 
 	/**
-	 * Export a deck to a CSV file.
-	 * @param {string} deckID - The deck identifier.
-	 * @returns {Promise<string>} The CSV data as a string, or empty string if error.
-	 */
-	static ExportDeckToCSV(arg1) {
-		return App.ExportDeckToCSV(arg1);
-	}
-
-	/**
 	 * Get the content of a specific card in a deck.
 	 * @param {string} deckID - The deck identifier.
 	 * @param {string} cardID - The card identifier.
@@ -178,16 +169,6 @@ export default class SRS {
 	 */
 	static GetReviewCardsForDeck(arg1) {
 		return App.GetReviewCardsForDeck(arg1);
-	}
-
-	/**
-	 * Import a deck from CSV data.
-	 * @param {string} deckName - The name for the new deck.
-	 * @param {string} csvData - The CSV data as a string.
-	 * @returns {Promise<void>}
-	 */
-	static ImportDeckFromCSV(arg1, arg2) {
-		return App.ImportDeckFromCSV(arg1, arg2);
 	}
 
 	/**

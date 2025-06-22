@@ -13,8 +13,6 @@ export function EscapeHtml(arg1:string):Promise<string>;
 
 export function EscapeHtmlAttribute(arg1:string):Promise<string>;
 
-export function ExportDeckToCSV(arg1:string):Promise<string>;
-
 export function GenerateID():Promise<string>;
 
 export function GetCardContent(arg1:string,arg2:string):Promise<string>;
@@ -32,8 +30,6 @@ export function GetFutureReviewCards():Promise<Array<models.Flashcard>>;
 export function GetReviewCards():Promise<Array<models.Flashcard>>;
 
 export function GetReviewCardsForDeck(arg1:string):Promise<Array<models.Flashcard>>;
-
-export function ImportDeckFromCSV(arg1:string,arg2:string):Promise<void>;
 
 export function LoadConfig():Promise<config.Config>;
 

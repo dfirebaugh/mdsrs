@@ -22,10 +22,6 @@ export function EscapeHtmlAttribute(arg1) {
   return window['go']['main']['App']['EscapeHtmlAttribute'](arg1);
 }
 
-export function ExportDeckToCSV(arg1) {
-  return window['go']['main']['App']['ExportDeckToCSV'](arg1);
-}
-
 export function GenerateID() {
   return window['go']['main']['App']['GenerateID']();
 }
@@ -60,10 +56,6 @@ export function GetReviewCards() {
 
 export function GetReviewCardsForDeck(arg1) {
   return window['go']['main']['App']['GetReviewCardsForDeck'](arg1);
-}
-
-export function ImportDeckFromCSV(arg1, arg2) {
-  return window['go']['main']['App']['ImportDeckFromCSV'](arg1, arg2);
 }
 
 export function LoadConfig() {

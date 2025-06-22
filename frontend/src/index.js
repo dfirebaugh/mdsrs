@@ -1,5 +1,6 @@
 import SRS from "./services/srs.js";
 import ConfigService from "./services/config.js";
+import CSVService from "./services/csv.js";
 
 import feather from 'feather-icons';
 window.feather = feather;
@@ -30,7 +31,7 @@ import "./styles/future-reviews.css"
 
 customElements.define("app-element", AppElement({ SRS }));
 customElements.define("main-content", MainContent({ SRS, ConfigService }));
-customElements.define("deck-explorer", DeckExplorer({ SRS, ConfigService }));
+customElements.define("deck-explorer", DeckExplorer({ SRS, ConfigService, CSVService }));
 customElements.define("code-editor", CodeEditor({ SRS, ConfigService }));
 customElements.define("card-viewer", CardViewer({ SRS, ConfigService }));
 customElements.define("card-editor", CardEditor({ SRS }));

@@ -1,4 +1,4 @@
-export default function DeckExplorer({ SRS, ConfigService }) {
+export default function DeckExplorer({ SRS, ConfigService, CSVService }) {
 	return class extends HTMLElement {
 		constructor() {
 			super();
@@ -160,7 +160,7 @@ export default function DeckExplorer({ SRS, ConfigService }) {
 
 		async handleExport(deckName) {
 			try {
-				const csvData = await SRS.ExportDeckToCSV(deckName);
+				const csvData = await CSVService.Export(deckName);
 
 				if (!csvData || csvData.trim() === '') {
 					// this.showToast(`Error exporting deck "${deckName}" - deck not found or export failed`, "error");
@@ -349,7 +349,7 @@ export default function DeckExplorer({ SRS, ConfigService }) {
 
 					try {
 						this.setLoading(true);
-						await SRS.ImportDeckFromCSV(deckName, csvData);
+						await CSVService.Import(deckName, csvData);
 						await this.loadDecks();
 						this.render();
 						this.showToast(`Deck "${deckName}" imported successfully`, 'success');
