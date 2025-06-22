@@ -2,49 +2,48 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
+	"html"
 
-	"github.com/dfirebaugh/mdsrs/internal/audio"
-	"github.com/dfirebaugh/mdsrs/internal/config"
-	"github.com/dfirebaugh/mdsrs/internal/nihongo"
-	"github.com/dfirebaugh/mdsrs/internal/srs"
-	"github.com/dfirebaugh/mdsrs/internal/storage"
+	"github.com/dfirebaugh/mdsrs/config"
+	"github.com/dfirebaugh/mdsrs/md"
+	"github.com/dfirebaugh/mdsrs/models"
+	"github.com/dfirebaugh/mdsrs/srs"
+	"github.com/dfirebaugh/mdsrs/store"
 
 	"github.com/sirupsen/logrus"
 )
 
-// App struct
 type App struct {
 	*config.Config
-	*audio.Player
-	*nihongo.DictionaryService
-	decks map[string]*storage.Deck
+	decks map[string]*models.Deck
+	srs   models.SRS
 	ctx   context.Context
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
-	c, err := config.LoadConfigFromFile(".mdsrs/config.json")
-	if err != nil {
-		logrus.Error(err)
-		c = config.NewConfig()
-	}
 	a := &App{
-		Config:            c,
-		decks:             make(map[string]*storage.Deck),
-		Player:            audio.NewPlayer(),
-		DictionaryService: nihongo.NewDictionaryService(),
-	}
-	storage.EnsureDecksDir()
-	decks, err := storage.LoadAllDecks()
-
-	for _, d := range decks {
-		d.SRS = srs.NewSRS(d.Name)
-		d.SRS.LoadCardsFromMarkdown(d.DirPath)
+		Config: config.NewConfig(),
+		decks:  make(map[string]*models.Deck),
 	}
 
+	if c, err := config.LoadConfigFromFile(".mdsrs/config.json"); err != nil {
+		logrus.Warnf("Failed to load config file: %v, using default config", err)
+	} else {
+		a.Config = c
+	}
+	store.SetDBPath(a.Config.DBFile)
+
+	if err := store.InitDB(); err != nil {
+		logrus.Fatalf("Failed to initialize database: %v", err)
+	}
+
+	a.srs = srs.NewSRS("", store.GetDB())
+
+	decks, err := store.LoadAllDecks()
 	if err != nil {
-		panic(err)
+		logrus.Fatalf("Failed to load decks: %v", err)
 	}
 
 	for _, deck := range decks {
@@ -54,44 +53,91 @@ func NewApp() *App {
 	return a
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) GetDecks() map[string]*storage.Deck {
+func (a *App) GetDecks() map[string]*models.Deck {
+	for _, deck := range a.decks {
+		if deck != nil && deck.Cards == nil {
+			deck.Cards = []models.Flashcard{}
+		}
+	}
 	return a.decks
 }
 
-func (a *App) NewDeck(name string) *storage.Deck {
-	s := srs.NewSRS(name)
-	a.decks[name] = storage.NewDeck(name, s)
-	s.LoadCardsFromMarkdown(a.decks[name].DirPath)
-	a.decks[name].Save()
-
-	return a.decks[name]
+func (a *App) NewDeck(name string) *models.Deck {
+	deck := store.NewDeck(name)
+	if deck == nil {
+		logrus.Errorf("Failed to create deck: %s", name)
+		return nil
+	}
+	a.decks[name] = deck
+	return deck
 }
 
-func (a *App) AddOrUpdateCard(deckID string, cardID string, title string, content string) storage.Flashcard {
+func (a *App) AddOrUpdateCard(deckID string, cardID string, title string, content string) models.Flashcard {
 	if cardID == "" {
-		cardID = storage.GenerateID()
+		cardID = store.GenerateID()
 	}
 
 	d := a.decks[deckID]
 	if d == nil {
 		fmt.Println("Deck not found, cannot add or update card")
-		return storage.Flashcard{}
+		return models.Flashcard{}
 	}
-	card := storage.Flashcard{
+	card := models.Flashcard{
 		DeckID:  deckID,
 		ID:      cardID,
 		Title:   title,
 		Content: content,
 	}
-	d.AddOrUpdateCard(card)
+	found := false
+	for _, c := range d.Cards {
+		if c.ID == cardID {
+			found = true
+			break
+		}
+	}
+	var err error
+	if found {
+		err = store.AddOrUpdateCard(d, card)
+	} else {
+		err = store.AddCard(d, card)
+	}
+	if err != nil {
+		logrus.Errorf("Failed to add/update card: %v", err)
+		return models.Flashcard{}
+	}
 
 	return card
+}
+
+func (a *App) DeleteCardFromDeck(deckID string, cardID string) error {
+	deck := a.decks[deckID]
+	if deck == nil {
+		return fmt.Errorf("deck not found: %s", deckID)
+	}
+	return store.DeleteCard(deck, cardID)
+}
+
+func (a *App) DeleteDeck(deckID string) error {
+	if deckID == "" {
+		return fmt.Errorf("deck ID cannot be empty")
+	}
+
+	if _, exists := a.decks[deckID]; !exists {
+		return fmt.Errorf("deck not found: %s", deckID)
+	}
+
+	if err := store.DeleteDeck(deckID); err != nil {
+		return fmt.Errorf("failed to delete deck from store: %w", err)
+	}
+
+	// Remove from memory
+	delete(a.decks, deckID)
+
+	return nil
 }
 
 func (a *App) GetCardContent(deckID string, cardID string) string {
@@ -112,115 +158,158 @@ func (a *App) GetCardContent(deckID string, cardID string) string {
 	return content
 }
 
-func (a *App) UpdateSRSData(deckID string, cardID string, reviewConfidence int) {
-	// Check if the deck exists and is not nil
-	deck, ok := a.decks[deckID]
-	if !ok || deck == nil {
-		logrus.Error("Deck not found or is nil")
+func (a *App) UpdateSRSData(deckID string, cardID string, reviewConfidence models.ReviewConfidence) {
+	logrus.Infof("App.UpdateSRSData called with deckID: %s, cardID: %s, reviewConfidence: %d", deckID, cardID, reviewConfidence)
+
+	if a.srs == nil {
+		logrus.Error("SRS is nil in App")
 		return
 	}
 
-	deck.SRS = srs.NewSRS(deck.DirPath)
-	deck.SRS.LoadCardsFromMarkdown(deck.DirPath)
-
-	// Check if SRS data in the deck is not nil
-	if deck.SRS == nil {
-		logrus.Error("SRS data in deck is nil")
-		return
-	}
-
-	// Proceed to update SRS data
-	deck.SRS.UpdateSRSData(deck, cardID, reviewConfidence)
-
-	// Safely attempt to save SRS data to file
-	if err := deck.SaveSRSToFile(); err != nil {
-		logrus.Errorf("Failed to save SRS data: %v", err)
-	}
+	logrus.Infof("Calling App.srs.UpdateSRSData for card: %s", cardID)
+	a.srs.UpdateSRSData(cardID, reviewConfidence)
 }
 
-func (a *App) GetReviewCards() ([]storage.Flashcard, error) {
-	if a == nil {
-		return nil, fmt.Errorf("GetReviewCards called on nil App reference")
-	}
-	if a.decks == nil {
-		return nil, fmt.Errorf("no decks available")
+func (a *App) GetCardSRSData(cardID string) models.CardData {
+	if a.srs == nil {
+		logrus.Error("SRS is nil in App")
+		return models.CardData{}
 	}
 
-	var cards []storage.Flashcard
+	return a.srs.GetCardData(cardID)
+}
+
+func (a *App) GetFutureReviewCards() []models.Flashcard {
+	if a.srs == nil {
+		logrus.Error("SRS is nil in App")
+		return []models.Flashcard{}
+	}
+
+	return a.srs.GetFutureReviewCards()
+}
+
+func (a *App) GetReviewCards() []models.Flashcard {
+	return a.GetReviewCardsForDeck("")
+}
+
+func (a *App) GetReviewCardsForDeck(deckName string) []models.Flashcard {
+	if a == nil {
+		logrus.Error("GetReviewCards called on nil App reference")
+		return []models.Flashcard{}
+	}
+	if a.decks == nil {
+		logrus.Error("no decks available")
+		return []models.Flashcard{}
+	}
+
 	numCards := a.Config.NumberOfCardsInReview
 
 	if numCards <= 0 {
-		return nil, fmt.Errorf("invalid number of cards configured: %d", numCards)
+		logrus.Errorf("invalid number of cards configured: %d", numCards)
+		return []models.Flashcard{}
 	}
 
-	for _, deck := range a.decks {
-		if deck == nil {
-			continue
+	if a.srs == nil {
+		logrus.Error("SRS is nil in App")
+		return []models.Flashcard{}
+	}
+
+	if deckName != "" {
+		// Get review cards for a specific deck
+		return a.srs.GetReviewCardsForDecks([]string{deckName}, numCards)
+	}
+
+	var deckNames []string
+	for deckName := range a.decks {
+		deckNames = append(deckNames, deckName)
+	}
+
+	return a.srs.GetReviewCardsForDecks(deckNames, numCards)
+}
+
+func (a *App) ToHTML(content string) string {
+	println(content)
+	return string(md.ToHTML([]byte(content)))
+}
+
+func (a *App) ExportDeckToCSV(deckID string) string {
+	deck, ok := a.decks[deckID]
+	if !ok {
+		logrus.Errorf("deck not found: %s", deckID)
+		return ""
+	}
+
+	csvData, err := store.ExportDeckToCSV(deck)
+	if err != nil {
+		logrus.Errorf("failed to export deck to CSV: %v", err)
+		return ""
+	}
+
+	return csvData
+}
+
+func (a *App) ImportDeckFromCSV(deckName string, csvData string) error {
+	deck, err := store.ImportCSVDeck(csvData, deckName)
+	if err != nil {
+		return err
+	}
+
+	a.decks[deck.Name] = deck
+	return nil
+}
+
+func (a *App) GetCardsFromDeck(deckName string) []models.Flashcard {
+	deck, ok := a.decks[deckName]
+	if !ok || deck == nil {
+		println(ok, deck.Name)
+		return nil
+	}
+
+	return deck.Cards
+}
+
+func (a *App) GetCards(deckNames []string, num int) []models.Flashcard {
+	if a == nil {
+		logrus.Error("GetCards called on nil App reference")
+		return []models.Flashcard{}
+	}
+	if a.decks == nil {
+		logrus.Error("no decks available")
+		return []models.Flashcard{}
+	}
+
+	if a.srs == nil {
+		logrus.Error("SRS is nil in App")
+		return []models.Flashcard{}
+	}
+
+	if len(deckNames) == 0 {
+		var allDeckNames []string
+		for deckName := range a.decks {
+			allDeckNames = append(allDeckNames, deckName)
 		}
-
-		deckReviewCards := deck.GetReviewCards(numCards)
-		cards = append(cards, deckReviewCards...)
-		numCards -= len(deckReviewCards)
-
-		if numCards <= 0 {
-			break
-		}
+		return a.srs.GetReviewCardsForDecks(allDeckNames, num)
 	}
 
-	if len(cards) == 0 {
-		return nil, fmt.Errorf("no review cards found")
+	return a.srs.GetReviewCardsForDecks(deckNames, num)
+}
+
+func (a *App) EscapeHtml(text string) string {
+	if text == "" {
+		return ""
 	}
-
-	return cards, nil
+	return html.EscapeString(text)
 }
 
-func (a *App) SaveConfig(configJSON string) {
-	if err := a.Config.UpdateConfigFromJSON(configJSON); err != nil {
-		logrus.Error(err)
+func (a *App) EscapeHtmlAttribute(text string) string {
+	if text == "" {
+		return ""
 	}
-
-	if err := a.Config.SaveConfig(".mdsrs/config.json"); err != nil {
-		logrus.Error(err)
-	}
+	return html.EscapeString(text)
 }
 
-func (a *App) PlayAudioFile(content string) {
-	a.Player.PlayAudioFile(content, audio.TypeMP3)
-}
-
-func (a *App) Speak(text string, language string) {
-	audio.Speak(text, language)
-}
-
-func (a *App) LoadConfig() config.Config {
-	c, _ := config.LoadConfigFromFile(".mdsrs/config.json")
-	a.Config = c
-	return *c
-}
-
-func (a *App) Tokenize(text string) []nihongo.WordInfo {
-	var response []nihongo.WordInfo
-	tokens := nihongo.Tokenize(text)
-
-	for _, t := range tokens {
-		if t.Surface == "BOS" || t.Surface == "EOS" {
-			response = append(response, nihongo.WordInfo{})
-			continue
-		}
-		word, err := a.DictionaryService.Lookup(t.Surface)
-		if err != nil {
-			logrus.Error(err)
-			response = append(response, nihongo.WordInfo{})
-			continue
-		}
-		response = append(response, *word)
-	}
-
-	response = response[1:]
-	return response[:len(response)-1]
-}
-
-func (a *App) Lookup(word string) nihongo.WordInfo {
-	result, _ := a.DictionaryService.Lookup(word)
-	return *result
+func (a *App) GenerateID() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
 }

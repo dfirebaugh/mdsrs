@@ -1,0 +1,73 @@
+:host {
+	display: block;
+}
+
+.icon-button {
+	width: 48px;
+	height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: none;
+	color: #e2e8f0;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	position: relative;
+	padding: 0;
+}
+
+.icon-button:hover {
+	background: rgba(66, 153, 225, 0.1);
+	color: #4299e1;
+}
+
+.icon-button:active {
+	background: rgba(66, 153, 225, 0.2);
+}
+
+.icon-button svg {
+	width: 24px;
+	height: 24px;
+	stroke-width: 2;
+	stroke: currentColor;
+}
+
+.icon-button::after {
+	content: attr(title);
+	position: absolute;
+	left: 100%;
+	top: 50%;
+	transform: translateY(-50%);
+	background: rgba(45, 55, 72, 0.9);
+	color: white;
+	padding: 0.5rem 0.75rem;
+	border-radius: 4px;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+	margin-left: 0.5rem;
+	z-index: 9999;
+}
+
+.icon-button:hover::after {
+	opacity: 1;
+}
+
+@media (max-width: 480px) {
+	.icon-button {
+		width: 40px;
+		height: 40px;
+	}
+
+	.icon-button svg {
+		width: 20px;
+		height: 20px;
+	}
+
+	.icon-button::after {
+		display: none;
+	}
+}

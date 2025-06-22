@@ -1,8 +1,10 @@
 export namespace config {
 	
 	export class Config {
+	    dbFile: string;
 	    numberOfCardsInReview: number;
-	    decksExcludedFromReview: string[];
+	    vimMode: boolean;
+	    lineNumbers: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -10,43 +12,81 @@ export namespace config {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.dbFile = source["dbFile"];
 	        this.numberOfCardsInReview = source["numberOfCardsInReview"];
-	        this.decksExcludedFromReview = source["decksExcludedFromReview"];
+	        this.vimMode = source["vimMode"];
+	        this.lineNumbers = source["lineNumbers"];
 	    }
 	}
 
 }
 
-export namespace nihongo {
+export namespace main {
 	
-	export class WordInfo {
-	    definitions: string[];
-	    partsOfSpeech: string[];
-	    notes: string[];
-	    surface: string;
+	export class ConfigResult {
+	    Config: config.Config;
+	    Error: string;
 	
 	    static createFrom(source: any = {}) {
-	        return new WordInfo(source);
+	        return new ConfigResult(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.definitions = source["definitions"];
-	        this.partsOfSpeech = source["partsOfSpeech"];
-	        this.notes = source["notes"];
-	        this.surface = source["surface"];
+	        this.Config = this.convertValues(source["Config"], config.Config);
+	        this.Error = source["Error"];
 	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 
 }
 
-export namespace storage {
+export namespace models {
 	
+	export class CardData {
+	    last_review: number;
+	    next_review: number;
+	    review_count: number;
+	    ease_factor: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new CardData(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.last_review = source["last_review"];
+	        this.next_review = source["next_review"];
+	        this.review_count = source["review_count"];
+	        this.ease_factor = source["ease_factor"];
+	    }
+	}
 	export class Flashcard {
 	    deckId: string;
 	    id: string;
 	    title: string;
 	    content: string;
+	    html: string;
+	    next_review?: number;
+	    review_count?: number;
+	    ease_factor?: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Flashcard(source);
@@ -58,6 +98,10 @@ export namespace storage {
 	        this.id = source["id"];
 	        this.title = source["title"];
 	        this.content = source["content"];
+	        this.html = source["html"];
+	        this.next_review = source["next_review"];
+	        this.review_count = source["review_count"];
+	        this.ease_factor = source["ease_factor"];
 	    }
 	}
 	export class Deck {
@@ -78,7 +122,7 @@ export namespace storage {
 		    if (!a) {
 		        return a;
 		    }
-		    if (a.slice) {
+		    if (a.slice && a.map) {
 		        return (a as any[]).map(elem => this.convertValues(elem, classs));
 		    } else if ("object" === typeof a) {
 		        if (asMap) {

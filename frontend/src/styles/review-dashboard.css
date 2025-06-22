@@ -1,0 +1,75 @@
+.review-dashboard {
+  padding: 2rem;
+  color: #e2e8f0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: rgba(35, 46, 64, 0.8);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.stat-card.hard {
+  border-top: 4px solid #f56565;
+}
+
+.stat-card.iffy {
+  border-top: 4px solid #ed8936;
+}
+
+.stat-card.easy {
+  border-top: 4px solid #48bb78;
+}
+
+.stat-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.stat-percentage {
+  font-size: 1.1rem;
+  color: #a0aec0;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+}
+
+.action-button {
+  background: #4299e1;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+}
+
+.action-button:hover {
+  background: #3182ce;
+  transform: translateY(-1px);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}

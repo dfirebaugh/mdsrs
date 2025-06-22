@@ -1,9 +1,0 @@
-.config-editor {
-  height: 100vh;
-  text-align:left;
-  display: flex;
-  justify-content: center;
-  overflow-x: hidden;
-  overflow-y: auto;
-  /* border: 1px solid red; */
-}

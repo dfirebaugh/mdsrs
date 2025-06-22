@@ -1,58 +1,59 @@
 module github.com/dfirebaugh/mdsrs
 
-go 1.21
+go 1.23.0
 
-toolchain go1.22.0
+toolchain go1.24.2
 
 require (
-	github.com/google/uuid v1.3.0
-	github.com/hajimehoshi/ebiten/v2 v2.7.0
-	github.com/hegedustibor/htgo-tts v0.0.0-20230402053941-cd8d1a158135
-	github.com/ikawaha/kagome-dict/ipa v1.0.10
-	github.com/ikawaha/kagome/v2 v2.9.5
+	github.com/alecthomas/chroma/v2 v2.14.0
+	github.com/google/uuid v1.6.0
+	github.com/litao91/goldmark-mathjax v0.0.0-20210217064022-a43cf739a50f
 	github.com/sirupsen/logrus v1.9.3
-	github.com/wailsapp/wails/v2 v2.8.0
-)
-
-require (
-	github.com/ebitengine/purego v0.7.0 // indirect
-	github.com/hajimehoshi/go-mp3 v0.3.4 // indirect
+	github.com/wailsapp/wails/v2 v2.10.1
+	github.com/yuin/goldmark v1.7.11
+	github.com/yuin/goldmark-emoji v1.0.3
+	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
+	go.abhg.dev/goldmark/hashtag v0.4.0
+	go.abhg.dev/goldmark/mermaid v0.5.0
+	modernc.org/sqlite v1.38.0
+	mvdan.cc/xurls/v2 v2.6.0
 )
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect
-	github.com/ebitengine/oto/v3 v3.2.0 // indirect
-	github.com/go-ole/go-ole v1.2.6 // indirect
+	github.com/dlclark/regexp2 v1.11.0 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/forPelevin/gomoji v1.3.0 // indirect
+	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/hajimehoshi/oto/v2 v2.3.1 // indirect
-	github.com/ikawaha/kagome-dict v1.0.9 // indirect
-	github.com/ikawaha/kagome.ipadic v1.1.2
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
-	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
-	github.com/jfreymuth/vorbis v1.0.2 // indirect
-	github.com/labstack/echo/v4 v4.10.2 // indirect
-	github.com/labstack/gommon v0.4.0 // indirect
-	github.com/leaanthony/go-ansi-parser v1.6.0 // indirect
-	github.com/leaanthony/gosod v1.0.3 // indirect
+	github.com/labstack/echo/v4 v4.13.3 // indirect
+	github.com/labstack/gommon v0.4.2 // indirect
+	github.com/leaanthony/go-ansi-parser v1.6.1 // indirect
+	github.com/leaanthony/gosod v1.0.4 // indirect
 	github.com/leaanthony/slicer v1.6.0 // indirect
-	github.com/leaanthony/u v1.1.0 // indirect
+	github.com/leaanthony/u v1.1.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/ncruces/go-strftime v0.1.9 // indirect
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/rivo/uniseg v0.4.4 // indirect
-	github.com/samber/lo v1.38.1 // indirect
-	github.com/themoeway/jmdict-go v0.0.0-20230321060422-fa8f5d54f364
-	github.com/tkrajina/go-reflector v0.5.6 // indirect
+	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/samber/lo v1.49.1 // indirect
+	github.com/tkrajina/go-reflector v0.5.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/wailsapp/go-webview2 v1.0.10 // indirect
+	github.com/wailsapp/go-webview2 v1.0.19 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
-	golang.org/x/crypto v0.18.0 // indirect
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
-	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/crypto v0.33.0 // indirect
+	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
+	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
+	modernc.org/libc v1.65.10 // indirect
+	modernc.org/mathutil v1.7.1 // indirect
+	modernc.org/memory v1.11.0 // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.8.0 => C:\Users\dfire\go\pkg\mod

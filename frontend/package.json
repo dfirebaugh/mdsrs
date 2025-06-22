@@ -1,37 +1,26 @@
 {
-  "name": "frontend",
-  "private": true,
-  "version": "0.0.0",
+  "name": "mdsrs-frontend",
+  "version": "1.0.0",
+  "description": "MDSRS Frontend",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "@codemirror/lang-json": "^6.0.1",
-    "@codemirror/lang-markdown": "^6.2.4",
-    "@fec/remark-a11y-emoji": "^4.0.2",
-    "@iconify-icon/react": "^2.0.1",
-    "@uiw/codemirror-theme-tokyo-night": "^4.21.25",
-    "@uiw/react-codemirror": "^4.21.25",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-markdown": "^9.0.1",
-    "react-syntax-highlighter": "^15.5.0",
-    "rehype-raw": "^7.0.0",
-    "remark-gemoji": "^8.0.0",
-    "remark-gfm": "^4.0.0",
-    "remark-highlight.js": "^7.0.1",
-    "remark-kbd": "^1.1.0",
-    "remark-rehype": "^11.1.0"
-  },
   "devDependencies": {
-    "@types/react": "^18.0.17",
-    "@types/react-dom": "^18.0.6",
-    "@types/react-syntax-highlighter": "^15.5.11",
-    "@vitejs/plugin-react": "^2.0.1",
-    "typescript": "^4.6.4",
-    "vite": "^3.0.7"
+    "vite": "^5.1.4"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.3.3",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-markdown": "^6.3.3",
+    "@codemirror/state": "^6.4.0",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.24.1",
+    "@replit/codemirror-vim": "^6.0.0",
+    "feather-icons": "^4.29.2",
+    "github-markdown-css": "^5.8.1",
+    "marked": "^15.0.12"
   }
 }

@@ -1,0 +1,96 @@
+.nav-bar {
+	display: grid;
+	grid-template-columns: repeat(3, auto) 1fr auto;
+	gap: 8px;
+	align-items: center;
+	padding: 1rem;
+	background: rgba(45, 55, 72, 0.9);
+	border-top: 1px solid rgba(66, 153, 225, 0.2);
+	flex-shrink: 0;
+}
+
+.right-group {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	justify-self: end;
+}
+
+button {
+	background: #4299e1;
+	color: white;
+	border: none;
+	padding: 0.75rem 1.5rem;
+	border-radius: 6px;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		background 0.2s,
+		transform 0.2s;
+	white-space: nowrap;
+}
+
+button:hover {
+	background: #3182ce;
+}
+
+button:active {
+	transform: translateY(0);
+}
+
+button:disabled {
+	background: #4a5568;
+	cursor: not-allowed;
+	transform: none;
+}
+
+button[data-rating="hard"] {
+	background: #e53e3e;
+}
+
+button[data-rating="hard"]:hover {
+	background: #c53030;
+}
+
+button[data-rating="iffy"] {
+	background: #ed8936;
+}
+
+button[data-rating="iffy"]:hover {
+	background: #dd6b20;
+}
+
+button[data-rating="easy"] {
+	background: #48bb78;
+}
+
+button[data-rating="easy"]:hover {
+	background: #38a169;
+}
+
+@media (max-width: 768px) {
+	.nav-bar button {
+		padding: 0.6rem 1rem;
+		font-size: 0.9rem;
+	}
+
+	.right-group {
+		gap: 8px;
+	}
+}
+
+@media (max-width: 480px) {
+	.nav-bar button {
+		padding: 0.5rem 0.75rem;
+		font-size: 0.8rem;
+	}
+
+	.right-group {
+		gap: 6px;
+	}
+
+	.nav-bar {
+		padding: 0.75rem;
+	}
+}

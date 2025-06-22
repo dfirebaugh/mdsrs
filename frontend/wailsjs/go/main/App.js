@@ -6,44 +6,80 @@ export function AddOrUpdateCard(arg1, arg2, arg3, arg4) {
   return window['go']['main']['App']['AddOrUpdateCard'](arg1, arg2, arg3, arg4);
 }
 
+export function DeleteCardFromDeck(arg1, arg2) {
+  return window['go']['main']['App']['DeleteCardFromDeck'](arg1, arg2);
+}
+
+export function DeleteDeck(arg1) {
+  return window['go']['main']['App']['DeleteDeck'](arg1);
+}
+
+export function EscapeHtml(arg1) {
+  return window['go']['main']['App']['EscapeHtml'](arg1);
+}
+
+export function EscapeHtmlAttribute(arg1) {
+  return window['go']['main']['App']['EscapeHtmlAttribute'](arg1);
+}
+
+export function ExportDeckToCSV(arg1) {
+  return window['go']['main']['App']['ExportDeckToCSV'](arg1);
+}
+
+export function GenerateID() {
+  return window['go']['main']['App']['GenerateID']();
+}
+
 export function GetCardContent(arg1, arg2) {
   return window['go']['main']['App']['GetCardContent'](arg1, arg2);
+}
+
+export function GetCardSRSData(arg1) {
+  return window['go']['main']['App']['GetCardSRSData'](arg1);
+}
+
+export function GetCards(arg1, arg2) {
+  return window['go']['main']['App']['GetCards'](arg1, arg2);
+}
+
+export function GetCardsFromDeck(arg1) {
+  return window['go']['main']['App']['GetCardsFromDeck'](arg1);
 }
 
 export function GetDecks() {
   return window['go']['main']['App']['GetDecks']();
 }
 
+export function GetFutureReviewCards() {
+  return window['go']['main']['App']['GetFutureReviewCards']();
+}
+
 export function GetReviewCards() {
   return window['go']['main']['App']['GetReviewCards']();
+}
+
+export function GetReviewCardsForDeck(arg1) {
+  return window['go']['main']['App']['GetReviewCardsForDeck'](arg1);
+}
+
+export function ImportDeckFromCSV(arg1, arg2) {
+  return window['go']['main']['App']['ImportDeckFromCSV'](arg1, arg2);
 }
 
 export function LoadConfig() {
   return window['go']['main']['App']['LoadConfig']();
 }
 
-export function Lookup(arg1) {
-  return window['go']['main']['App']['Lookup'](arg1);
-}
-
 export function NewDeck(arg1) {
   return window['go']['main']['App']['NewDeck'](arg1);
-}
-
-export function PlayAudioFile(arg1) {
-  return window['go']['main']['App']['PlayAudioFile'](arg1);
 }
 
 export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }
 
-export function Speak(arg1, arg2) {
-  return window['go']['main']['App']['Speak'](arg1, arg2);
-}
-
-export function Tokenize(arg1) {
-  return window['go']['main']['App']['Tokenize'](arg1);
+export function ToHTML(arg1) {
+  return window['go']['main']['App']['ToHTML'](arg1);
 }
 
 export function UpdateConfigFromJSON(arg1) {

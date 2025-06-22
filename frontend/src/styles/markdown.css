@@ -1,0 +1,45 @@
+@import "github-markdown-css/github-markdown.css";
+
+.markdown-body {
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 45px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+.markdown-body pre {
+  background-color: var(--code-background);
+}
+
+.markdown-body code {
+  background-color: var(--code-background);
+  color: var(--code-text);
+}
+
+.markdown-body blockquote {
+  border-left-color: var(--accent-color);
+}
+
+.markdown-body table tr {
+  background-color: var(--background-color);
+}
+
+.markdown-body table tr:nth-child(2n) {
+  background-color: var(--secondary-background);
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-body {
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.markdown-body a {
+	color: #6b8db5;
+}

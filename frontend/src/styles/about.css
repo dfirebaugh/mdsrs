@@ -1,0 +1,113 @@
+.about-container {
+	display: grid;
+	grid-template-rows: auto 1fr;
+	gap: 1.5rem;
+	height: 100%;
+	background: rgba(45, 55, 72, 0.3);
+}
+
+.about-header {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	gap: 1rem;
+	padding-bottom: 1rem;
+	border-bottom: 2px solid rgba(66, 153, 225, 0.3);
+}
+
+.about-header h2 {
+	margin: 0;
+	color: #fff;
+	font-size: 1.8rem;
+	font-weight: 600;
+	text-align: left;
+}
+
+.about-content {
+	overflow-y: auto;
+}
+
+.about-content .markdown-body {
+	padding: 2rem;
+	background: transparent;
+	color: #e2e8f0;
+}
+
+.about-content .markdown-body h1,
+.about-content .markdown-body h2,
+.about-content .markdown-body h3,
+.about-content .markdown-body h4,
+.about-content .markdown-body h5,
+.about-content .markdown-body h6 {
+	color: #fff;
+	margin-top: 1.5rem;
+	margin-bottom: 1rem;
+}
+
+.about-content .markdown-body h1:first-child,
+.about-content .markdown-body h2:first-child {
+	margin-top: 0;
+}
+
+.about-content .markdown-body p {
+	color: #e2e8f0;
+	line-height: 1.6;
+	margin-bottom: 1rem;
+}
+
+.about-content .markdown-body ul,
+.about-content .markdown-body ol {
+	color: #e2e8f0;
+	margin-bottom: 1rem;
+	padding-left: 1.5rem;
+}
+
+.about-content .markdown-body li {
+	margin-bottom: 0.5rem;
+	line-height: 1.6;
+}
+
+.about-content .markdown-body code {
+	background-color: rgba(66, 153, 225, 0.2);
+	color: #90cdf4;
+	padding: 0.2rem 0.4rem;
+	border-radius: 4px;
+	font-size: 0.9em;
+}
+
+.about-content .markdown-body pre {
+	background-color: rgba(45, 55, 72, 0.8);
+	border: 1px solid rgba(66, 153, 225, 0.2);
+	border-radius: 6px;
+	padding: 1rem;
+	overflow-x: auto;
+	margin-bottom: 1rem;
+}
+
+.about-content .markdown-body pre code {
+	background: transparent;
+	color: #e2e8f0;
+	padding: 0;
+}
+
+.about-content .markdown-body blockquote {
+	border-left: 4px solid rgba(66, 153, 225, 0.5);
+	padding-left: 1rem;
+	margin: 1rem 0;
+	color: #a0aec0;
+	font-style: italic;
+}
+
+@media (max-width: 768px) {
+	.about-container {
+		gap: 1rem;
+	}
+
+	.about-header h2 {
+		font-size: 1.5rem;
+	}
+
+	.about-content .markdown-body {
+		padding: 1.5rem;
+	}
+}
